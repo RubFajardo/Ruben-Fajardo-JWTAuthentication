@@ -1,52 +1,71 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { useNavigate } from "react-router-dom";
 
 export const Home = () => {
 
+	const [name, setName] = useState('')
+	const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
+
+	const navigate = useNavigate();
+
 	const { store, dispatch } = useGlobalReducer()
-
-	const loadMessage = async () => {
-		try {
-			const backendUrl = import.meta.env.VITE_BACKEND_URL
-
-			if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file")
-
-			const response = await fetch(backendUrl + "/api/hello")
-			const data = await response.json()
-
-			if (response.ok) dispatch({ type: "set_hello", payload: data.message })
-
-			return data
-
-		} catch (error) {
-			if (error.message) throw new Error(
-				`Could not fetch the message from the backend.
-				Please check if the backend is running and the backend port is public.`
-			);
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		let new_user = {
+			"name": name,
+			"email": email,
+			"password": password
 		}
-
-	}
-
-	useEffect(() => {
-		loadMessage()
-	}, [])
+		let promise = await fetch("https://silver-trout-v6rx6x944wv536xgr-3001.app.github.dev/api/user/register", {
+			method: "POST",
+			headers: {"Content-type": "application/json"},
+			body: JSON.stringify(new_user)
+		}) 
+		navigate("/login")
+	};
 
 	return (
-		<div className="text-center mt-5">
-			<h1 className="display-4">Hello Rigo!!</h1>
-			<p className="lead">
-				<img src={rigoImageUrl} className="img-fluid rounded-circle mb-3" alt="Rigo Baby" />
-			</p>
-			<div className="alert alert-info">
-				{store.message ? (
-					<span>{store.message}</span>
-				) : (
-					<span className="text-danger">
-						Loading message from the backend (make sure your python 🐍 backend is running)...
-					</span>
-				)}
-			</div>
+		<div className="container mt-5">
+			<h2>Registro de Usuario</h2>
+			<form onSubmit={handleSubmit} className="mt-4">
+				<div className="mb-3">
+					<label htmlFor="name" className="form-label">Nombre</label>
+					<input
+						type="name"
+						className="form-control"
+						id="name"
+						onChange={(e) => setName(e.target.value)}
+						value={name}
+						required
+					/>
+				</div>
+				<div className="mb-3">
+					<label htmlFor="email" className="form-label">Correo Electrónico</label>
+					<input
+						type="email"
+						className="form-control"
+						id="email"
+						onChange={(e) => setEmail(e.target.value)}
+						value={email}
+						required
+					/>
+				</div>
+				<div className="mb-3">
+					<label htmlFor="password" className="form-label">Contraseña</label>
+					<input
+						type="password"
+						className="form-control"
+						onChange={(e) => setPassword(e.target.value)}
+						id="password"
+						value={password}
+						required
+					/>
+				</div>
+				<button type="submit" className="btn btn-primary">Registrarse</button>
+			</form>
 		</div>
 	);
 }; 
